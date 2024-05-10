@@ -1,0 +1,5 @@
+_target_: holo.optim.DiscreteEvolution
+mutation_prob: null
+recombine_prob: null
+num_particles: 1000000
+survival_quantile: 0.0001

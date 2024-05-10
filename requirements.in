@@ -1,0 +1,5 @@
+torch
+botorch >= 0.9.4
+hydra-core
+pytest
+wandb

@@ -1,0 +1,53 @@
+[project]
+name = "holo-bench"
+dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
+description = "Benchmarks for discrete sequence optimization"
+authors = [{name = "Anonymous"}]
+classifiers=[
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+]
+
+
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.in"]}
+optional-dependencies = {dev = {file = ["requirements-dev.in"]}}
+readme = {file = "README.rst"}
+
+[tool.setuptools.packages.find]
+include = ["holo*"]
+
+[tool.setuptools_scm]
+search_parent_directories = true
+version_scheme = "no-guess-dev"
+local_scheme = "node-and-date"
+fallback_version = "0.0.0"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "B905",  # requires python >= 3.10
+    "B007",  # unused-loop-control-variable
+    "E741",  # ambiguous-variable-name
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "F401", # MODULE IMPORTED BUT UNUSED
+]
