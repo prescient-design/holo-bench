@@ -41,7 +41,7 @@ def test_ehrlich_single_motif():
 
     unif_samples = torch.randint(0, num_states, (num_samples, num_steps))
     f = ehrlich.evaluate_true(unif_samples)
-    assert torch.allclose(f, torch.zeros_like(f))
+    assert torch.allclose(f, torch.full_like(f, -float("inf")))
 
 
 def test_ehrlich_multi_motif():
@@ -72,7 +72,7 @@ def test_ehrlich_multi_motif():
 
     unif_samples = torch.randint(0, num_states, (num_samples, num_steps))
     f = ehrlich.evaluate_true(unif_samples)
-    assert torch.allclose(f, torch.zeros_like(f))
+    assert torch.allclose(f, torch.full_like(f, -float("inf")))
 
 
 def test_invalid_ehrlich():
