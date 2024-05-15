@@ -51,8 +51,19 @@ for _ in range(4):
 print(f"\nFinal solution: {params[0].data}")
 ```
 
-### Unit Tests
+## Contributing
+
+Contributions are welcome!
+
+### Install dev requirements and pre-commit hooks
 
 ```bash
-python -m pytest tests/
+python -m pip install -r requirements-dev.in
+pre-commit install
+```
+
+### Testing
+
+```bash
+python -m pytest -v --cov-report term-missing --cov=./holo ./tests
 ```
