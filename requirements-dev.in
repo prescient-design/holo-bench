@@ -1,0 +1,4 @@
+pytest
+pip-tools
+pytest-cov
+pre-commit
