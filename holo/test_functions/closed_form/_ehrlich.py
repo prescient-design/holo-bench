@@ -45,7 +45,9 @@ class Ehrlich(SyntheticTestFunction):
         )
         self.stationary_dist = dmp_stationary_dist(self.transition_matrix)
 
-        max_spacing = (dim - num_motifs * motif_length) // (num_motifs * motif_length)
+        slack_positions = dim - num_motifs * motif_length
+        element_gaps = num_motifs * (motif_length - 1)
+        max_spacing = 1 + slack_positions // element_gaps
         if max_spacing < 1:
             raise ValueError("cannot guarantee a solution satisfying all motifs exists.")
 
@@ -62,7 +64,13 @@ class Ehrlich(SyntheticTestFunction):
         self.spacings = []
         for _ in range(num_motifs):
             # draw random spacing
-            spacing = torch.randint(1, max_spacing + 1, (motif_length - 1,), generator=self._generator)
+            # spacing = torch.randint(1, max_spacing + 1, (motif_length - 1,), generator=self._generator)
+            # random draw from (motif_length - 1) simplex
+            weights = torch.rand(motif_length - 1, generator=self._generator)
+            weights /= weights.sum()
+            spacing = (slack_positions // num_motifs) * weights
+            # round down
+            spacing = 1 + spacing.floor().to(torch.int64)
             self.spacings.append(spacing)
 
     def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
