@@ -24,10 +24,10 @@ def main(cfg):
 
     dtype = torch.double if cfg.dtype == "float64" else torch.float
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     test_function = hydra.utils.instantiate(cfg.test_function)
     test_function = test_function.to(device, dtype)
-    
+
     initial_solution = test_function.initial_solution().to(dtype)
     params = [torch.nn.Parameter(initial_solution)]
 

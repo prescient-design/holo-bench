@@ -97,17 +97,19 @@ class Ehrlich(SyntheticTestFunction):
             generator=self._generator,
         ).squeeze(0)
         return dmp_samples
-    
+
     def optimal_solution(self):
         # sample random sequence from DMP
         soln = torch.zeros(self.dim, dtype=torch.int64, device=self.initial_dist.device)
         # fill in spaced motifs with repeats
         position = 0
         for motif, spacing in zip(self.motifs, self.spacings):
-            spacing = torch.cat([
-                torch.tensor([0], device=self.initial_dist.device),
-                spacing,
-            ])
+            spacing = torch.cat(
+                [
+                    torch.tensor([0], device=self.initial_dist.device),
+                    spacing,
+                ]
+            )
             index = spacing.cumsum(0).tolist()
             print(index)
             motif = motif.tolist()
@@ -126,7 +128,7 @@ class Ehrlich(SyntheticTestFunction):
             print(soln)
             print(optimal_value)
             raise RuntimeError("optimal value not achieved by optimal solution.")
-        return soln        
+        return soln
 
     def to(self, device, dtype):
         self.transition_matrix = self.transition_matrix.to(device, dtype)
@@ -136,7 +138,7 @@ class Ehrlich(SyntheticTestFunction):
         self.spacings = [spacing.to(device) for spacing in self.spacings]
         self._generator = torch.Generator(device=device).manual_seed(self._random_seed)
         return self
-    
+
     def __repr__(self):
         motif_list = [f"motif_{i}: {motif.tolist()}" for i, motif in enumerate(self.motifs)]
         spacing_list = [f"spacing_{i}: {spacing.tolist()}" for i, spacing in enumerate(self.spacings)]
