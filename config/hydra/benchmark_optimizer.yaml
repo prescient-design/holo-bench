@@ -1,11 +1,12 @@
 defaults:
+  - _self_
   - optimizer: discrete_evolution
   - test_function: ehrlich
 
 random_seed: 0
 log_interval: 1
 num_opt_steps: 512
-wandb_host: null
+wandb_host: https://api.wandb.ai
 wandb_mode: online
 project_name: holo
 exp_name: dry_run

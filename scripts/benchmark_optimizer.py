@@ -3,13 +3,13 @@ import random
 import hydra
 import numpy as np
 import torch
-import wandb
 from omegaconf import OmegaConf
 
+import wandb
 from holo.logging import wandb_setup
 
 
-@hydra.main(config_path="../config/hydra", config_name="benchmark_optimizer")
+@hydra.main(version_base=None, config_path="../config/hydra", config_name="benchmark_optimizer")
 def main(cfg):
     if cfg.optimizer.mutation_prob is None:
         cfg.optimizer.mutation_prob = 1.1 / cfg.test_function.dim

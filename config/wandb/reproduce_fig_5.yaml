@@ -1,0 +1,41 @@
+project: holo
+entity: samuelstanton
+method: grid
+
+parameters:
+  exp_name:
+    value: discrete_evolution_hyper_comparison
+  random_seed:
+    distribution: int_uniform
+    min: 1
+    max: 32
+
+  # Test Function Parameters
+  test_function.dim:
+    value: 256
+  test_function.num_motifs:
+    value: 4
+  test_function.motif_length:
+    value: 8
+  test_function.quantization:
+    value: 4
+  test_function.noise_std:
+    value: 0.0
+
+  # Optimizer Parameters
+  optimizer.mutation_prob:
+    values: [0.0144, 0.0039]
+  optimizer.recombine_prob:
+    values: [0.0084, 0.0039]
+  optimizer.survival_quantile:
+    values: [0.0002, 0.0001]
+
+
+program: scripts/benchmark_optimizer.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config-name"
+  - "benchmark_optimizer"
+  - ${args_no_hyphens}

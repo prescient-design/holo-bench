@@ -1,0 +1,50 @@
+project: holo
+entity: samuelstanton
+method: bayes
+metric:
+  goal: minimize
+  name: cumulative_regret
+
+parameters:
+  exp_name:
+    value: discrete_evolution_hyper_sweep
+  random_seed:
+    value: 0
+
+  # Test Function Parameters
+  test_function.dim:
+    value: 256
+  test_function.num_motifs:
+    value: 4
+  test_function.motif_length:
+    value: 8
+  test_function.quantization:
+    value: 4
+  test_function.noise_std:
+    value: 0.0
+
+  # Optimizer Parameters
+  optimizer.mutation_prob:
+    # values: [0.02, 0.0039]
+    distribution: log_normal
+    mu: -4.5
+    sigma: 1
+  optimizer.recombine_prob:
+    # values: [0.0882, 0.0039]
+    distribution: log_normal
+    mu: -4.5
+    sigma: 1
+  optimizer.survival_quantile:
+    # values: [0.00015, 0.0001]
+    distribution: log_normal
+    mu: -8
+    sigma: 1
+
+program: scripts/benchmark_optimizer.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config-name"
+  - "benchmark_optimizer"
+  - ${args_no_hyphens}

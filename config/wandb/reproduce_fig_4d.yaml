@@ -1,0 +1,32 @@
+project: holo
+entity: samuelstanton
+method: grid
+
+parameters:
+  exp_name:
+    value: ehrlich_param_sweep
+  random_seed:
+    distribution: int_uniform
+    min: 1
+    max: 32
+
+  # Test Function Parameters
+  test_function.dim:
+    value: 256
+  test_function.num_motifs:
+    value: 4
+  test_function.motif_length:
+    value: 8
+  test_function.quantization:
+    values: [2, 4, 8]
+  test_function.noise_std:
+    value: 0.0
+
+program: scripts/benchmark_optimizer.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config-name"
+  - "benchmark_optimizer"
+  - ${args_no_hyphens}
