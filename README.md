@@ -67,3 +67,7 @@ pre-commit install
 ```bash
 python -m pytest -v --cov-report term-missing --cov=./holo ./tests
 ```
+
+### Reproducing
+
+The Weights & Biases dashboard for the experiments in "Closed-Form Test Functions for Biophysical Optimization Algorithms" can be found [here](https://wandb.ai/samuelstanton/holo).

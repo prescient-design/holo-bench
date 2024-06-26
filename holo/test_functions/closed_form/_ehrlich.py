@@ -1,5 +1,3 @@
-from typing import Optional
-
 import torch
 from botorch.test_functions import SyntheticTestFunction
 
@@ -22,12 +20,12 @@ class Ehrlich(SyntheticTestFunction):
         dim: int = 7,
         num_motifs: int = 1,
         motif_length: int = 3,
-        quantization: Optional[int] = None,
+        quantization: int | None = None,
         noise_std: float = 0.0,
         negate: bool = False,
         random_seed: int = 0,
     ) -> None:
-        bounds = [(0.0, 1.0) for _ in range(dim)]
+        bounds = [(0.0, float(num_states - 1)) for _ in range(dim)]
         self.num_states = num_states
         self.dim = dim
         self._random_seed = random_seed
@@ -94,17 +92,25 @@ class Ehrlich(SyntheticTestFunction):
         is_feasible = log_likelihood > -float("inf")
         return torch.where(is_feasible, all_motifs_present, -float("inf"))
 
-    def initial_solution(self):
+    def initial_solution(self, n: int = 1):
         # reset generator seed so initial solution is always the same
         self._generator = self._generator.manual_seed(self._random_seed)
         dmp_samples = sample_dmp(
             initial_dist=self.stationary_dist.squeeze(-1),
             transition_matrix=self.transition_matrix,
             num_steps=self.dim,
-            num_samples=1,
+            num_samples=n,
             generator=self._generator,
-        ).squeeze(0)
+        )
+        if n == 1:
+            return dmp_samples.squeeze(0)
         return dmp_samples
+
+    def random_solution(self, n: int = 1):
+        unif_samples = torch.randint(self.num_states, (n, self.dim), device=self.initial_dist.device)
+        if n == 1:
+            return unif_samples.squeeze(0)
+        return unif_samples
 
     def optimal_solution(self):
         # sample random sequence from DMP

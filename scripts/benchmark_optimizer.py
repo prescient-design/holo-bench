@@ -32,7 +32,9 @@ def main(cfg):
     params = [torch.nn.Parameter(initial_solution)]
 
     print(f"Test function: {test_function}")
-    print(f"Known optimal solution: {test_function.optimal_solution()}")
+    known_soln = test_function.optimal_solution()
+    opt_val = test_function.optimal_value
+    print(f"Known optimal solution: {known_soln}")
 
     def closure(param_list):
         return test_function(param_list[0])
@@ -40,7 +42,7 @@ def main(cfg):
     vocab = list(range(test_function.num_states))
     optimizer = hydra.utils.instantiate(cfg.optimizer, params=params, vocab=vocab)
 
-    print(f"Searching for solution with optimal value {test_function.optimal_value}...")
+    print(f"Searching for solution with optimal value {opt_val}...")
     cumulative_regret = 0.0
     best_loss = float("inf")
     for t_idx in range(cfg.num_opt_steps):
@@ -49,9 +51,9 @@ def main(cfg):
             best_loss = loss.item()
             best_params = [p.data.clone() for p in params]
 
-        simple_regret_best = best_loss - test_function.optimal_value
-        simple_regret_last = loss - test_function.optimal_value
-        cumulative_regret += best_loss - test_function.optimal_value
+        simple_regret_best = best_loss - opt_val
+        simple_regret_last = loss - opt_val
+        cumulative_regret += best_loss - opt_val
         # frac_particles_feasible = optimizer.particle_loss.gt(-float("inf")).float().mean().item()
         frac_particles_feasible = optimizer.particle_loss.lt(float("inf")).float().mean().item()
 

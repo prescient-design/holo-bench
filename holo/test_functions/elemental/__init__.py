@@ -6,4 +6,5 @@ from ._discrete_markov_process import (
     sample_dmp,
     sample_sparse_ergodic_transition_matrix,
 )
+from ._hamming_dist import hamming_dist
 from ._motif import motif_search
