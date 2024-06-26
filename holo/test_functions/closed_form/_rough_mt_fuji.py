@@ -5,6 +5,14 @@ from holo.test_functions.elemental import hamming_dist
 
 
 class RoughMtFuji(SyntheticTestFunction):
+    """
+    Implementation of the Rough Mt. Fuji fitness landscape
+    as described in Neidhart et al. (2014)
+    'Adaptation in tunably rugged fitness landscapes:
+    The Rough Mount Fuji model'
+    https://arxiv.org/abs/1402.3065
+    """
+
     num_states = 2
     num_centroids = 1
 
