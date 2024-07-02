@@ -1,8 +1,8 @@
 [project]
-name = "holo-bench"
+name = "pytorch-holo"
 dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 description = "Benchmarks for discrete sequence optimization"
-authors = [{name = "Anonymous"}]
+authors = [{name = "Samuel Stanton", email = "stanton.samuel@gene.com"}]
 classifiers=[
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
