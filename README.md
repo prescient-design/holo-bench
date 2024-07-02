@@ -71,3 +71,17 @@ python -m pytest -v --cov-report term-missing --cov=./holo ./tests
 ### Reproducing
 
 The Weights & Biases dashboard for the experiments in "Closed-Form Test Functions for Biophysical Optimization Algorithms" can be found [here](https://wandb.ai/samuelstanton/holo).
+
+### Citation
+
+If you use HoloBench in your research, please cite the following paper:
+
+```
+@inproceedings{stanton2024closed,
+  title={Closed-Form Test Functions for Biophysical Sequence Optimization Algorithms},
+  author={Stanton, Samuel and Alberstein, Robert and Frey, Nathan and Watkins, Andrew and Cho, Kyunghyun},
+  booktitle={1st Machine Learning for Life and Material Sciences Workshop at ICML},
+  year={2024},
+  url={https://arxiv.org/abs/2407.00236}
+}
+```
