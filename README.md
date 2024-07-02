@@ -4,8 +4,7 @@
 ### Installation
 
 ```bash
-python -m pip install -r requirements.in
-pip install -e .
+python -m pip install pytorch-holo
 ```
 
 ### Usage
