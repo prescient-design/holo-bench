@@ -60,8 +60,10 @@ class RoughMtFuji(SyntheticTestFunction):
     def optimal_solution(self):
         soln = self.centroids.clone()
         mask = self._random_term - self._additive_term > 0
+        mask = mask.to(device=soln.device)
         soln = torch.where(mask, torch.ones_like(soln), soln)
         mask = self._random_term + self._additive_term < 0
+        mask = mask.to(device=soln.device)
         soln = torch.where(mask, torch.zeros_like(soln), soln)
 
         return soln
@@ -69,6 +71,7 @@ class RoughMtFuji(SyntheticTestFunction):
     def to(self, device, dtype):
         self.centroids = self.centroids.to(device, dtype)
         self._generator = torch.Generator(device=device).manual_seed(self._random_seed)
+        self._random_term = self._random_term.to(device)
         return self
 
     def __repr__(self):
