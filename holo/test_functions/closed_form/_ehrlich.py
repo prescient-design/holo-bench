@@ -21,6 +21,7 @@ class Ehrlich(SyntheticTestFunction):
         num_motifs: int = 1,
         motif_length: int = 3,
         quantization: int | None = None,
+        epistasis_factor: float = 0.0,
         noise_std: float = 0.0,
         negate: bool = False,
         random_seed: int = 0,
@@ -29,6 +30,7 @@ class Ehrlich(SyntheticTestFunction):
         self.num_states = num_states
         self.dim = dim
         self._random_seed = random_seed
+        self._motif_length = motif_length
         self._quantization = quantization
         super(Ehrlich, self).__init__(
             noise_std=noise_std,
@@ -36,6 +38,7 @@ class Ehrlich(SyntheticTestFunction):
             bounds=bounds,
         )
         self._generator = torch.Generator().manual_seed(random_seed)
+        self._epistasis_factor = epistasis_factor
         self.initial_dist = torch.ones(num_states) / num_states
         bandwidth = int(num_states * 0.4)
         self.transition_matrix = sample_sparse_ergodic_transition_matrix(
@@ -72,25 +75,26 @@ class Ehrlich(SyntheticTestFunction):
             self.spacings.append(spacing)
 
     def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
-        motif_present = []
+        motif_contrib = []
         for motif, spacing in zip(self.motifs, self.spacings):
-            motif_present.append(
-                motif_search(
-                    solution=X,
-                    motif=motif,
-                    spacing=spacing,
-                    mode="present",
-                    quantization=self._quantization,
-                )
+            motif_present = motif_search(
+                solution=X,
+                motif=motif,
+                spacing=spacing,
+                mode="present",
+                quantization=self._quantization,
             )
-        all_motifs_present = torch.stack(motif_present).prod(dim=0)
+            response = _cubic_response(motif_present, self._epistasis_factor)
+            motif_contrib.append(response)
+
+        all_motifs_contrib = torch.stack(motif_contrib).prod(dim=0)
         log_likelihood = dmp_sample_log_likelihood(
             samples=X,
             initial_dist=self.initial_dist,
             transition_matrix=self.transition_matrix,
         )
         is_feasible = log_likelihood > -float("inf")
-        return torch.where(is_feasible, all_motifs_present, -float("inf"))
+        return torch.where(is_feasible, all_motifs_contrib, -float("inf"))
 
     def initial_solution(self, n: int = 1):
         # reset generator seed so initial solution is always the same
@@ -168,3 +172,8 @@ class Ehrlich(SyntheticTestFunction):
             f"negate={self.negate}, "
             f"random_seed={self._random_seed})"
         )
+
+
+def _cubic_response(X: torch.Tensor, epistasis_factor: float):
+    coeff = epistasis_factor * X * (X - 1.0) + 1.0
+    return coeff * X

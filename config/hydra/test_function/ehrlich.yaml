@@ -4,6 +4,7 @@ dim: 256
 num_motifs: 4
 motif_length: 8
 quantization: ${test_function.motif_length}
+epistasis_factor: 0.0
 noise_std: 0.0
 negate: true
 random_seed: 0  # only change this if you want to change the actual test function instance
