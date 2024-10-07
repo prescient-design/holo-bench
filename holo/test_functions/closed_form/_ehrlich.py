@@ -42,7 +42,11 @@ class Ehrlich(SyntheticTestFunction):
         self.initial_dist = torch.ones(num_states) / num_states
         bandwidth = int(num_states * 0.4)
         self.transition_matrix = sample_sparse_ergodic_transition_matrix(
-            num_states, bandwidth, softmax_temp=0.5, generator=self._generator, repeats_always_possible=True
+            num_states,
+            bandwidth,
+            softmax_temp=0.5,
+            generator=self._generator,
+            repeats_always_possible=True,
         )
         self.stationary_dist = dmp_stationary_dist(self.transition_matrix)
 
@@ -129,13 +133,11 @@ class Ehrlich(SyntheticTestFunction):
                 ]
             )
             index = spacing.cumsum(0).tolist()
-            print(index)
             motif = motif.tolist()
             for idx in range(index[-1] + 1):
                 if idx in index:
                     next_state = motif.pop(0)
                 soln[position] = next_state
-                # print(position)
                 position += 1
         # fill in remaining states with last state of last motif
         soln[position:] = soln[position - 1]
@@ -143,8 +145,6 @@ class Ehrlich(SyntheticTestFunction):
         # check optimal value
         optimal_value = self.evaluate_true(soln.unsqueeze(0))
         if not optimal_value == self._optimal_value:
-            print(soln)
-            print(optimal_value)
             raise RuntimeError("optimal value not achieved by optimal solution.")
         return soln
 
