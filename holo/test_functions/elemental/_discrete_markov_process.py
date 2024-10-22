@@ -103,9 +103,7 @@ def sample_sparse_ergodic_transition_matrix(
         generator = torch.Generator()
 
     randn_matrix = torch.randn(num_states, num_states, generator=generator)
-    print(randn_matrix)
     dense_transition_matrix = (randn_matrix / softmax_temp).softmax(dim=-1)
-    print(dense_transition_matrix)
 
     # construct mask as banded matrix
     mask = banded_square_matrix(num_states, bandwidth).bool()
@@ -115,8 +113,6 @@ def sample_sparse_ergodic_transition_matrix(
     if repeats_always_possible:
         # set diagonal entries of mask to True
         mask = mask | torch.eye(num_states, dtype=torch.bool)
-
-    print(mask)
 
     transition_matrix = torch.where(mask, dense_transition_matrix, torch.zeros_like(dense_transition_matrix))
     transition_matrix = transition_matrix / transition_matrix.sum(dim=-1, keepdim=True)
