@@ -1,0 +1,46 @@
+project: holo
+entity: samuelstanton
+method: grid
+metric:
+  goal: minimize
+  name: cumulative_regret
+
+parameters:
+  exp_name:
+    value: lookup_benchmark_sweep
+  random_seed:
+    values: [0, 1, 2, 3, 4, 5, 6, 7]
+
+  # Test Function Selection
+  test_function:
+    values:
+      - tfbind8
+      - trpb
+      - dhfr
+
+  # Fixed Test Function Parameters
+  test_function.noise_std:
+    value: 0.0
+  test_function.negate:
+    value: true  # Convert maximization to minimization (botorch convention)
+
+  # Optimizer Parameters
+  optimizer.mutation_prob:
+    values: [0.5, 0.25, 0.125, 0.0625]
+  optimizer.recombine_prob:
+    values: [0.5, 0.25, 0.125, 0.0625]
+  optimizer.survival_quantile:
+    values: [0.5, 0.25, 0.125, 0.0625]
+  optimizer.num_particles:
+    value: 2000
+  num_opt_steps:
+    value: 32
+
+program: scripts/benchmark_optimizer.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config-name"
+  - "benchmark_optimizer"
+  - ${args_no_hyphens}

@@ -1,0 +1,57 @@
+project: holo
+entity: samuelstanton
+method: grid
+metric:
+  goal: minimize
+  name: cumulative_regret
+
+parameters:
+  exp_name:
+    value: ehrlich_benchmark_sweep
+  random_seed:
+    values: [0, 1, 2, 3, 4, 5, 6, 7]
+
+  # Test Function Parameters (Create multiple Ehrlich variants matching lookup functions)
+  test_function:
+    value: ehrlich
+  test_function.dim:
+    values: [4, 8]  # TRPB, TFBIND8/DHFR
+  test_function.num_states:
+    values: [4, 20]  # DNA alphabet, Amino acid alphabet
+
+  # Shared Ehrlich parameters
+  test_function.num_motifs:
+    value: 2
+  test_function.motif_length:
+    value: 2
+  test_function.quantization:
+    value: 2
+  test_function.epistasis_factor:
+    value: 0.0
+  test_function.noise_std:
+    value: 0.0
+  test_function.negate:
+    value: true
+  test_function.random_seed:
+    value: 0  # Fixed to keep test function instance consistent
+
+  # Optimizer Parameters - same as lookup sweep
+  optimizer.mutation_prob:
+    values: [0.5, 0.25, 0.125, 0.0625]
+  optimizer.recombine_prob:
+    values: [0.5, 0.25, 0.125, 0.0625]
+  optimizer.survival_quantile:
+    values: [0.5, 0.25, 0.125, 0.0625]
+  optimizer.num_particles:
+    value: 2000
+  num_opt_steps:
+    value: 32
+
+program: scripts/benchmark_optimizer.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config-name"
+  - "benchmark_optimizer"
+  - ${args_no_hyphens}
