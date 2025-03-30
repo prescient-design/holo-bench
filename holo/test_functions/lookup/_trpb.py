@@ -72,7 +72,7 @@ class TRPBLookup(SyntheticTestFunction):
         self._device = device or torch.device("cpu")
 
         # Find optimal value and optimizers
-        self._optimal_value = max(self._lookup_dict.values())
+        self._optimal_value = float(max(self._lookup_dict.values()))
         self._optimizers = [
             self._seq_to_tensor(seq) for seq, score in self._lookup_dict.items() if score == self._optimal_value
         ]
@@ -80,7 +80,7 @@ class TRPBLookup(SyntheticTestFunction):
         # We don't need to initialize a distance function since we can use hamming_dist directly
 
     def _load_data(self) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
-        """Load the TrpB dataset.
+        """Load the TrpB dataset from variationalsearch repository using pooch.
 
         Returns:
             A tuple containing:
@@ -88,22 +88,38 @@ class TRPBLookup(SyntheticTestFunction):
                 - sorted_scores: Array of scores sorted in descending order
                 - sorted_seqs: List of sequences sorted by descending score
         """
-        # For testing, let's create a small synthetic dataset
-        # This is a temporary solution until we can properly access the data
+        import pandas as pd
+        import pooch
 
-        # Create synthetic data with 1000 random sequences
-        lookup_dict = {}
-        alphabet = self.amino_acid_alphabet
+        # Remote URL for the data
+        url = "https://raw.githubusercontent.com/skalyaanamoorthy/variationalsearch/main/data/TRPB/four-site_simplified_AA_data.csv"
 
-        # Create the wildtype sequence
-        lookup_dict[self.wildtype_sequence] = 0.8  # High score for wildtype
+        # Use pooch to download and cache the data
+        file_path = pooch.retrieve(
+            url,
+            known_hash=None,  # We're not checking the hash for now
+            fname="four-site_simplified_AA_data.csv",
+            path=pooch.os_cache("trpb"),
+        )
 
-        # Create some random sequences with random scores
-        np.random.seed(42)  # For reproducibility
-        for _ in range(1000):
-            seq = "".join(np.random.choice(list(alphabet), size=self.dim))
-            if seq not in lookup_dict:  # Avoid duplicates
-                lookup_dict[seq] = np.random.uniform(0.0, 1.0)
+        # Read the data file
+        df = pd.read_csv(file_path)
+
+        # Make sure the data has the expected columns
+        required_columns = {"AAs", "fitness"}
+        if not required_columns.issubset(df.columns):
+            raise ValueError(f"TrpB data missing required columns. Found: {df.columns}, needed: {required_columns}")
+
+        # Remove rows with stop codons if that column exists
+        if "# Stop" in df.columns:
+            df = df[df["# Stop"] < 1]
+
+        # Extract sequences and scores
+        sequences = df["AAs"].tolist()
+        scores = df["fitness"].values
+
+        # Create lookup dictionary
+        lookup_dict = {seq: score for seq, score in zip(sequences, scores)}
 
         # Sort sequences by score
         seqs = list(lookup_dict.keys())

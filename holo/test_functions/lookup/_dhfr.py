@@ -61,13 +61,13 @@ class DHFRLookup(SyntheticTestFunction):
         self._bounds = [(0, 3) for _ in range(self.dim)]
         super().__init__(noise_std=noise_std, negate=negate)
 
-        self.alphabet_size = len(self.dna_alphabet)
-        self.num_states = self.alphabet_size  # Add alias for compatibility
+        self.num_states = len(self.dna_alphabet)  # Add alias for compatibility
+        self.alphabet_size = self.num_states  # For test compatibility
         self._lookup_dict, self._sorted_scores, self._sorted_seqs = self._load_data()
         self._device = device or torch.device("cpu")
 
         # Find optimal value and optimizers
-        self._optimal_value = max(self._lookup_dict.values())
+        self._optimal_value = float(max(self._lookup_dict.values()))
         self._optimizers = [
             self._seq_to_tensor(seq) for seq, score in self._lookup_dict.items() if score == self._optimal_value
         ]
@@ -75,7 +75,7 @@ class DHFRLookup(SyntheticTestFunction):
         # We don't need to initialize a distance function since we can use hamming_dist directly
 
     def _load_data(self) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
-        """Load the DHFR dataset.
+        """Load the DHFR dataset from variationalsearch repository using pooch.
 
         Returns:
             A tuple containing:
@@ -83,22 +83,37 @@ class DHFRLookup(SyntheticTestFunction):
                 - sorted_scores: Array of scores sorted in descending order
                 - sorted_seqs: List of sequences sorted by descending score
         """
-        # For testing, let's create a small synthetic dataset
-        # This is a temporary solution until we can properly access the data
+        import pandas as pd
+        import pooch
 
-        # Create synthetic data with random sequences
-        lookup_dict = {}
-        alphabet = self.dna_alphabet
+        # Remote URL for the data
+        url = "https://raw.githubusercontent.com/skalyaanamoorthy/variationalsearch/main/data/DHFR/DHFR_fitness_data_wt.csv"
 
-        # Create the wildtype sequence
-        lookup_dict[self.wildtype_sequence] = 0.8  # High score for wildtype
+        # Use pooch to download and cache the data
+        file_path = pooch.retrieve(
+            url,
+            known_hash=None,  # We're not checking the hash for now
+            fname="DHFR_fitness_data_wt.csv",
+            path=pooch.os_cache("dhfr"),
+        )
 
-        # Create some random sequences with random scores
-        np.random.seed(42)  # For reproducibility
-        for _ in range(2000):
-            seq = "".join(np.random.choice(list(alphabet), size=self.dim))
-            if seq not in lookup_dict:  # Avoid duplicates
-                lookup_dict[seq] = np.random.uniform(0.0, 1.0)
+        # Read the data file
+        df = pd.read_csv(file_path, index_col=0)
+
+        # Make sure the data has the expected columns
+        required_columns = {"SV", "m"}
+        if not required_columns.issubset(df.columns):
+            raise ValueError(f"DHFR data missing required columns. Found: {df.columns}, needed: {required_columns}")
+
+        # Extract sequences and scores
+        sequences = df["SV"].tolist()
+        scores = df["m"].values  # 'm' is the target column for DHFR
+
+        # Update wildtype sequence based on actual data
+        self.wildtype_sequence = sequences[0]  # First sequence is the wildtype in this dataset
+
+        # Create lookup dictionary
+        lookup_dict = {seq: score for seq, score in zip(sequences, scores)}
 
         # Sort sequences by score
         seqs = list(lookup_dict.keys())
@@ -192,7 +207,7 @@ class DHFRLookup(SyntheticTestFunction):
             or (dim,) if n=1.
         """
         # Generate random indices from 0 to alphabet_size-1
-        X = torch.randint(low=0, high=self.alphabet_size, size=(n, self.dim), device=self._device)
+        X = torch.randint(low=0, high=self.num_states, size=(n, self.dim), device=self._device)
 
         if n == 1:
             return X.squeeze(0)
@@ -270,7 +285,7 @@ class DHFRLookup(SyntheticTestFunction):
         return (
             f"DHFRLookup("
             f"dim={self.dim}, "
-            f"alphabet_size={self.alphabet_size}, "
+            f"alphabet_size={self.num_states}, "
             f"noise_std={self.noise_std}, "
             f"negate={self.negate})"
         )
