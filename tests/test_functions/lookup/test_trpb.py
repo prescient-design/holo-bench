@@ -1,14 +1,48 @@
+import os
+from typing import Dict, List, Tuple
+
+import numpy as np
 import pytest
 import torch
 
 from holo.test_functions.lookup import TRPBLookup
 
 
+# Mock implementation that doesn't download data
+class MockTRPBLookup(TRPBLookup):
+    def _load_data(self) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
+        """Create synthetic data for testing instead of downloading."""
+        np.random.seed(42)  # For reproducibility
+        lookup_dict = {}
+
+        # Add wildtype with high score
+        lookup_dict[self.wildtype_sequence] = 0.9
+
+        # Add some random sequences
+        for _ in range(100):
+            seq = "".join(np.random.choice(self.alphabet, size=self.dim))
+            if seq not in lookup_dict:
+                lookup_dict[seq] = np.random.uniform(0.0, 1.0)
+
+        # Sort sequences by score
+        seqs = list(lookup_dict.keys())
+        scores = np.array([lookup_dict[seq] for seq in seqs])
+        sorted_indices = np.argsort(scores)[::-1]
+        sorted_scores = scores[sorted_indices]
+        sorted_seqs = [seqs[i] for i in sorted_indices]
+
+        return lookup_dict, sorted_scores, sorted_seqs
+
+
 class TestTRPBLookup:
     @pytest.fixture
     def trpb_function(self):
         """Create a TRPBLookup instance for testing."""
-        # Skip download if needed to speed up the test for CI
+        # Use mock implementation in CI
+        is_ci = os.environ.get("CI", "false").lower() == "true"
+        if is_ci:
+            return MockTRPBLookup()
+        # Use real implementation locally
         return TRPBLookup()
 
     def test_initialization(self, trpb_function):
