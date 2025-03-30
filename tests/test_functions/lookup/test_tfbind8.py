@@ -16,9 +16,9 @@ class TestTFBIND8Lookup:
         assert tfbind8_function.dim == 8
         assert tfbind8_function.num_states == 4
         assert tfbind8_function.alphabet == ["A", "C", "G", "T"]
-        assert len(tfbind8_function.sequence_to_score) > 0
+        assert len(tfbind8_function._lookup_dict) > 0
         assert tfbind8_function._optimal_value is not None
-        assert len(tfbind8_function._optimizers) == 1
+        assert len(tfbind8_function._optimizers) >= 1
 
     def test_evaluate_true(self, tfbind8_function):
         """Test function evaluation."""

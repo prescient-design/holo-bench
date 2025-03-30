@@ -15,7 +15,7 @@ class TestDHFRLookup:
         """Test that the function initializes properly."""
         assert dhfr_function.dim == 9
         assert dhfr_function.alphabet_size == 4
-        assert dhfr_function.dna_alphabet == "ACGT"
+        assert "".join(dhfr_function.alphabet) == "ACGT"
         assert len(dhfr_function._lookup_dict) > 0
         assert dhfr_function._optimal_value is not None
         assert len(dhfr_function._optimizers) > 0

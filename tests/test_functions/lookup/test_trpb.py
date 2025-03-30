@@ -15,7 +15,7 @@ class TestTRPBLookup:
         """Test that the function initializes properly."""
         assert trpb_function.dim == 4
         assert trpb_function.alphabet_size == 20
-        assert trpb_function.amino_acid_alphabet == "ARNDCQEGHILKMFPSTWYV"
+        assert "".join(trpb_function.alphabet) == "ARNDCQEGHILKMFPSTWYV"
         assert len(trpb_function._lookup_dict) > 0
         assert trpb_function._optimal_value is not None
         assert len(trpb_function._optimizers) > 0
