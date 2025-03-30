@@ -1,5 +1,6 @@
 botorch >= 0.9.4
 hydra-core
 numpy < 2.0
+pooch
 torch
 wandb

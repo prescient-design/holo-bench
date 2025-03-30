@@ -1,0 +1,4 @@
+_target_: holo.test_functions.lookup.TFBIND8Lookup
+noise_std: 0.0
+negate: true  # Negate to convert maximization problem to minimization (botorch convention)
+dim: 8  # Fixed length of DNA sequence
