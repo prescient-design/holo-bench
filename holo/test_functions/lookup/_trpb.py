@@ -75,7 +75,7 @@ class TRPBLookup(AbstractLookup):
                 - sorted_seqs: List of sequences sorted by descending score
         """
         # Remote URL for the data
-        url = "https://raw.githubusercontent.com/skalyaanamoorthy/variationalsearch/main/data/TRPB/four-site_simplified_AA_data.csv"
+        url = "https://media.githubusercontent.com/media/francesding/variationalsearch/refs/heads/main/data/TRPB/four-site_simplified_AA_data.csv"
 
         # Use pooch to download and cache the data
         file_path = pooch.retrieve(
