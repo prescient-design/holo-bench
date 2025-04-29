@@ -66,7 +66,7 @@ class TFBIND8Lookup(AbstractLookup):
                 - sorted_seqs: List of sequences sorted by descending score
         """
         # Remote URL for the data
-        url = "https://raw.githubusercontent.com/skalyaanamoorthy/variationalsearch/main/data/TFBIND8/tf_bind_8.csv"
+        url = "https://media.githubusercontent.com/media/francesding/variationalsearch/refs/heads/main/data/TFBIND8/tf_bind_8.csv"
 
         # Use pooch to download and cache the data
         try:

@@ -71,7 +71,7 @@ class DHFRLookup(AbstractLookup):
                 - sorted_seqs: List of sequences sorted by descending score
         """
         # Remote URL for the data
-        url = "https://raw.githubusercontent.com/skalyaanamoorthy/variationalsearch/main/data/DHFR/DHFR_fitness_data_wt.csv"
+        url = "https://media.githubusercontent.com/media/francesding/variationalsearch/refs/heads/main/data/DHFR/DHFR_fitness_data_wt.csv"
 
         # Use pooch to download and cache the data
         file_path = pooch.retrieve(
