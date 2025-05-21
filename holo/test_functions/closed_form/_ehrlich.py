@@ -32,7 +32,7 @@ class Ehrlich(SyntheticTestFunction):
         self._random_seed = random_seed
         self._motif_length = motif_length
         self._quantization = quantization
-        super(Ehrlich, self).__init__(
+        super().__init__(
             noise_std=noise_std,
             negate=negate,
             bounds=bounds,
@@ -78,7 +78,7 @@ class Ehrlich(SyntheticTestFunction):
             spacing = 1 + spacing.floor().to(torch.int64)
             self.spacings.append(spacing)
 
-    def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
+    def _evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
         motif_contrib = []
         for motif, spacing in zip(self.motifs, self.spacings):
             motif_present = motif_search(
@@ -99,6 +99,14 @@ class Ehrlich(SyntheticTestFunction):
         )
         is_feasible = log_likelihood > -float("inf")
         return torch.where(is_feasible, all_motifs_contrib, -float("inf"))
+
+    # syntactic sugar for botorch<0.14
+    def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
+        return self._evaluate_true(X)
+
+    def forward(self, X: torch.Tensor, noise: bool = True) -> torch.Tensor:
+        # cast X to float to ensure you can get noisy observations
+        return super().forward(X.float(), noise)
 
     def initial_solution(self, n: int = 1):
         # reset generator seed so initial solution is always the same
