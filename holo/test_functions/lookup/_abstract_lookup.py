@@ -50,6 +50,7 @@ class AbstractLookup(SyntheticTestFunction):
             device: The torch device to use.
         """
         self.dim = dim
+        self.categorical_inds = list(range(dim))
 
         # Set up alphabet and mappings
         if isinstance(alphabet, str):
@@ -132,7 +133,7 @@ class AbstractLookup(SyntheticTestFunction):
         indices = x.cpu().numpy().astype(int)
         return "".join(self.index_to_char[idx] for idx in indices)
 
-    def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
+    def _evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
         """Evaluate the true function value (lookup the scores).
 
         Args:
@@ -149,6 +150,14 @@ class AbstractLookup(SyntheticTestFunction):
             return Y.reshape(-1)
         else:
             return self._evaluate_true_batched(X)
+
+    # syntactic sugar for botorch<0.14
+    def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
+        return self._evaluate_true(X)
+
+    def forward(self, X: torch.Tensor, noise: bool = True) -> torch.Tensor:
+        # cast X to float to ensure you can get noisy observations
+        return super().forward(X.float(), noise)
 
     def _evaluate_true_batched(self, X: torch.Tensor) -> torch.Tensor:
         """Evaluate for a 2D batch of inputs.
