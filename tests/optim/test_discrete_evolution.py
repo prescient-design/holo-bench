@@ -96,7 +96,7 @@ def test_ehrlich_optimization():
     mutation_prob = 1 / num_steps
     recombine_prob = 1 / num_steps
     survival_quantile = 0.01
-    num_particles = 2048
+    num_particles = 4096
     optimizer = DiscreteEvolution(
         params,
         vocab=list(range(num_states)),
