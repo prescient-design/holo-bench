@@ -26,7 +26,7 @@ class RoughMtFuji(SyntheticTestFunction):
         random_seed: int = 0,
     ):
         self.dim = dim
-        super(RoughMtFuji, self).__init__(
+        super().__init__(
             noise_std=noise_std,
             negate=negate,
             bounds=[(0.0, 1.0) for _ in range(dim)],
@@ -38,9 +38,17 @@ class RoughMtFuji(SyntheticTestFunction):
         self._random_term_std = random_term_std
         self._random_term = torch.randn(1, dim, generator=self._generator) * random_term_std
 
-    def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
+    def _evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
         dist = hamming_dist(X, self.centroids, dim=-1)
         return -self._additive_term * dist + (self._random_term * X).sum(dim=-1)
+
+    # syntactic sugar for botorch<0.14
+    def evaluate_true(self, X: torch.Tensor) -> torch.Tensor:
+        return self._evaluate_true(X)
+
+    def forward(self, X: torch.Tensor, noise: bool = True) -> torch.Tensor:
+        # cast X to float to ensure you can get noisy observations
+        return super().forward(X.float(), noise)
 
     def initial_solution(self, n: int = 1):
         # reset generator seed so initial solution is always the same
