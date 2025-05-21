@@ -50,6 +50,7 @@ class AbstractLookup(SyntheticTestFunction):
             device: The torch device to use.
         """
         self.dim = dim
+        self.categorical_inds = list(range(dim))
 
         # Set up alphabet and mappings
         if isinstance(alphabet, str):

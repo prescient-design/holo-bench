@@ -26,6 +26,7 @@ class RoughMtFuji(SyntheticTestFunction):
         random_seed: int = 0,
     ):
         self.dim = dim
+        self.categorical_inds = list(range(dim))
         super().__init__(
             noise_std=noise_std,
             negate=negate,

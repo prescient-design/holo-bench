@@ -32,6 +32,7 @@ class Ehrlich(SyntheticTestFunction):
         self._random_seed = random_seed
         self._motif_length = motif_length
         self._quantization = quantization
+        self.categorical_inds = list(range(dim))
         super().__init__(
             noise_std=noise_std,
             negate=negate,
