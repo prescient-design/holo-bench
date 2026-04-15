@@ -103,6 +103,45 @@ class AbstractLookup(SyntheticTestFunction):
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
+    @staticmethod
+    def _retrieve(url: str, fname: str, cache_name: str) -> str:
+        """Download and cache a remote dataset file, returning its local path.
+
+        Args:
+            url: Remote URL of the file to download.
+            fname: Filename to save the file as in the cache.
+            cache_name: Subdirectory under the OS cache dir to store the file.
+
+        Returns:
+            Absolute path to the cached file.
+        """
+        try:
+            import pooch
+        except ImportError as err:
+            raise ImportError(
+                "Downloading lookup datasets requires `pooch`. "
+                "Install it with `pip install pytorch-holo[benchmark]`."
+            ) from err
+        return pooch.retrieve(url, known_hash=None, fname=fname, path=pooch.os_cache(cache_name))
+
+    @staticmethod
+    def _build_lookup(sequences: List[str], scores: np.ndarray) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
+        """Build a lookup dict and score-sorted views from raw sequence/score arrays.
+
+        Args:
+            sequences: Sequence strings.
+            scores: Fitness scores aligned with ``sequences``.
+
+        Returns:
+            ``(lookup_dict, sorted_scores, sorted_seqs)`` where the sorted views are
+            in descending score order. Duplicate sequences keep their last score.
+        """
+        lookup_dict = dict(zip(sequences, scores))
+        seqs = list(lookup_dict.keys())
+        uniq_scores = np.array([lookup_dict[seq] for seq in seqs])
+        order = np.argsort(uniq_scores)[::-1]
+        return lookup_dict, uniq_scores[order], [seqs[i] for i in order]
+
     def _seq_to_tensor(self, seq: str) -> torch.Tensor:
         """Convert a sequence string to a tensor of indices.
 

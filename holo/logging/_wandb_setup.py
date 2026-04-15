@@ -1,16 +1,22 @@
 from typing import MutableMapping
 
-import wandb
-from omegaconf import DictConfig, OmegaConf
-
 import holo
 
 
-def wandb_setup(cfg: DictConfig):
+def wandb_setup(cfg):
     """
     Runs `wandb.init` and `wandb.login`.
     The values in `cfg` are logged to the wandb run.
     """
+    try:
+        import wandb
+        from omegaconf import OmegaConf
+    except ImportError as err:
+        raise ImportError(
+            "wandb logging requires `wandb` and `hydra-core`. "
+            "Install them with `pip install pytorch-holo[benchmark]`."
+        ) from err
+
     if not hasattr(cfg, "wandb_host"):
         cfg["wandb_host"] = "https://api.wandb.ai"
 
@@ -36,9 +42,9 @@ def wandb_setup(cfg: DictConfig):
     wandb.config.update(log_cfg)
 
 
-def flatten_config(d: DictConfig, parent_key: str = "", sep: str = "/"):
+def flatten_config(d: MutableMapping, parent_key: str = "", sep: str = "/"):
     """
-    Flatten a nested `DictConfig` object into a flat dictionary for logging.
+    Flatten a nested mapping into a flat dictionary for logging.
     """
     items = []
     for k, v in d.items():

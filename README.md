@@ -7,6 +7,14 @@
 python -m pip install pytorch-holo
 ```
 
+To run the benchmark scripts (which use Hydra configs and Weights & Biases logging) or
+to use the lookup-table test functions (`DHFRLookup`, `TFBIND8Lookup`, `TRPBLookup`),
+install the optional `benchmark` extras:
+
+```bash
+python -m pip install "pytorch-holo[benchmark]"
+```
+
 ### Usage
 
 ```bash
