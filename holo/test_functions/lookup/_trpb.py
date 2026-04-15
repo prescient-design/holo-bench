@@ -12,7 +12,6 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import pooch
 import torch
 
 from holo.test_functions.lookup._abstract_lookup import AbstractLookup
@@ -66,7 +65,7 @@ class TRPBLookup(AbstractLookup):
         )
 
     def _load_data(self) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
-        """Load the TrpB dataset from variationalsearch repository using pooch.
+        """Load the TrpB dataset from the variationalsearch repository.
 
         Returns:
             A tuple containing:
@@ -74,41 +73,17 @@ class TRPBLookup(AbstractLookup):
                 - sorted_scores: Array of scores sorted in descending order
                 - sorted_seqs: List of sequences sorted by descending score
         """
-        # Remote URL for the data
         url = "https://media.githubusercontent.com/media/francesding/variationalsearch/refs/heads/main/data/TRPB/four-site_simplified_AA_data.csv"
-
-        # Use pooch to download and cache the data
-        file_path = pooch.retrieve(
-            url,
-            known_hash=None,  # We're not checking the hash for now
-            fname="four-site_simplified_AA_data.csv",
-            path=pooch.os_cache("trpb"),
-        )
-
-        # Read the data file
+        file_path = self._retrieve(url, fname="four-site_simplified_AA_data.csv", cache_name="trpb")
         df = pd.read_csv(file_path)
 
-        # Make sure the data has the expected columns
         required_columns = {"AAs", "fitness"}
         if not required_columns.issubset(df.columns):
             raise ValueError(f"TrpB data missing required columns. Found: {df.columns}, needed: {required_columns}")
 
-        # Remove rows with stop codons if that column exists
         if "# Stop" in df.columns:
             df = df[df["# Stop"] < 1]
 
-        # Extract sequences and scores
         sequences = df["AAs"].tolist()
         scores = df["fitness"].values
-
-        # Create lookup dictionary
-        lookup_dict = {seq: score for seq, score in zip(sequences, scores)}
-
-        # Sort sequences by score
-        seqs = list(lookup_dict.keys())
-        scores = np.array([lookup_dict[seq] for seq in seqs])
-        sorted_indices = np.argsort(scores)[::-1]  # Descending order
-        sorted_scores = scores[sorted_indices]
-        sorted_seqs = [seqs[i] for i in sorted_indices]
-
-        return lookup_dict, sorted_scores, sorted_seqs
+        return self._build_lookup(sequences, scores)

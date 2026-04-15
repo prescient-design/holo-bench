@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import pooch
 import torch
 
 from holo.test_functions.lookup._abstract_lookup import AbstractLookup
@@ -56,8 +55,7 @@ class TFBIND8Lookup(AbstractLookup):
         )
 
     def _load_data(self) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
-        """
-        Load the TFBIND8 dataset using pooch.
+        """Load the TFBIND8 dataset.
 
         Returns:
             Tuple[Dict[str, float], np.ndarray, List[str]]:
@@ -65,71 +63,35 @@ class TFBIND8Lookup(AbstractLookup):
                 - sorted_scores: Array of scores sorted in descending order
                 - sorted_seqs: List of sequences sorted by descending score
         """
-        # Remote URL for the data
         url = "https://media.githubusercontent.com/media/francesding/variationalsearch/refs/heads/main/data/TFBIND8/tf_bind_8.csv"
-
-        # Use pooch to download and cache the data
         try:
-            file_path = pooch.retrieve(
-                url,
-                known_hash=None,  # We're not checking the hash for now
-                fname="tf_bind_8.csv",
-                path=pooch.os_cache("tfbind8"),
-            )
-
-            # Read the data file
+            file_path = self._retrieve(url, fname="tf_bind_8.csv", cache_name="tfbind8")
             df = pd.read_csv(file_path)
-
-            # Make sure the data has the expected columns
             required_columns = {"sequences", "fitness"}
             if not required_columns.issubset(df.columns):
                 raise ValueError(
                     f"TFBIND8 data missing required columns. Found: {df.columns}, needed: {required_columns}"
                 )
-
-            # Extract sequences and scores
             sequences = df["sequences"].tolist()
             scores = df["fitness"].values
-
+        except ImportError:
+            raise
         except Exception:
-            # If there's an error with the CSV, fallback to the TF binding dataset from FLEXS
-            url = f"https://raw.githubusercontent.com/samsinai/FLEXS/master/flexs/landscapes/data/tf_binding/{self.transcription_factor}_8mers.txt"
+            sequences, scores = self._load_flexs_fallback()
 
-            # Use pooch to download and cache the data
-            file_path = pooch.retrieve(
-                url,
-                known_hash=None,  # We're not checking the hash for now
-                fname=f"{self.transcription_factor}_8mers.txt",
-                path=pooch.os_cache("tfbind8"),
-            )
+        return self._build_lookup(sequences, scores)
 
-            # Read the data file
-            df = pd.read_csv(file_path, sep="\t")
+    def _load_flexs_fallback(self) -> Tuple[List[str], np.ndarray]:
+        """Fall back to the FLEXS TF-binding dataset for ``self.transcription_factor``."""
+        url = f"https://raw.githubusercontent.com/samsinai/FLEXS/master/flexs/landscapes/data/tf_binding/{self.transcription_factor}_8mers.txt"
+        file_path = self._retrieve(url, fname=f"{self.transcription_factor}_8mers.txt", cache_name="tfbind8")
+        df = pd.read_csv(file_path, sep="\t")
 
-            # Extract sequences and scores
-            sequences_1 = df["8-mer"].tolist()
-            sequences_2 = df["8-mer.1"].tolist() if "8-mer.1" in df.columns else []
-            all_sequences = sequences_1 + sequences_2
+        sequences_1 = df["8-mer"].tolist()
+        sequences_2 = df["8-mer.1"].tolist() if "8-mer.1" in df.columns else []
+        sequences = sequences_1 + sequences_2
 
-            # Extract E-scores and normalize them to [0, 1]
-            e_scores = df["E-score"].values
-            # Normalize scores to [0, 1]
-            normalized_scores = (e_scores - e_scores.min()) / (e_scores.max() - e_scores.min())
-            all_scores = np.concatenate(
-                [normalized_scores, normalized_scores[: len(sequences_2)]] if sequences_2 else [normalized_scores]
-            )
-
-            sequences = all_sequences
-            scores = all_scores
-
-        # Create lookup dictionary
-        lookup_dict = {seq: score for seq, score in zip(sequences, scores)}
-
-        # Sort sequences by score
-        seqs = list(lookup_dict.keys())
-        scores = np.array([lookup_dict[seq] for seq in seqs])
-        sorted_indices = np.argsort(scores)[::-1]  # Descending order
-        sorted_scores = scores[sorted_indices]
-        sorted_seqs = [seqs[i] for i in sorted_indices]
-
-        return lookup_dict, sorted_scores, sorted_seqs
+        e_scores = df["E-score"].values
+        normalized = (e_scores - e_scores.min()) / (e_scores.max() - e_scores.min())
+        scores = np.concatenate([normalized, normalized[: len(sequences_2)]]) if sequences_2 else normalized
+        return sequences, scores

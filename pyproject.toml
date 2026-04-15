@@ -16,8 +16,11 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.in"]}
-optional-dependencies = {dev = {file = ["requirements-dev.in"]}}
 readme = {file = "README.rst"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+benchmark = {file = ["requirements-benchmark.in"]}
+dev = {file = ["requirements-dev.in"]}
 
 [tool.setuptools.packages.find]
 include = ["holo*"]

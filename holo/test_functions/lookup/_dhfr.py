@@ -11,7 +11,6 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import pooch
 import torch
 
 from holo.test_functions.lookup._abstract_lookup import AbstractLookup
@@ -62,7 +61,7 @@ class DHFRLookup(AbstractLookup):
         )
 
     def _load_data(self) -> Tuple[Dict[str, float], np.ndarray, List[str]]:
-        """Load the DHFR dataset from variationalsearch repository using pooch.
+        """Load the DHFR dataset from the variationalsearch repository.
 
         Returns:
             A tuple containing:
@@ -70,40 +69,16 @@ class DHFRLookup(AbstractLookup):
                 - sorted_scores: Array of scores sorted in descending order
                 - sorted_seqs: List of sequences sorted by descending score
         """
-        # Remote URL for the data
         url = "https://media.githubusercontent.com/media/francesding/variationalsearch/refs/heads/main/data/DHFR/DHFR_fitness_data_wt.csv"
-
-        # Use pooch to download and cache the data
-        file_path = pooch.retrieve(
-            url,
-            known_hash=None,  # We're not checking the hash for now
-            fname="DHFR_fitness_data_wt.csv",
-            path=pooch.os_cache("dhfr"),
-        )
-
-        # Read the data file
+        file_path = self._retrieve(url, fname="DHFR_fitness_data_wt.csv", cache_name="dhfr")
         df = pd.read_csv(file_path, index_col=0)
 
-        # Make sure the data has the expected columns
         required_columns = {"SV", "m"}
         if not required_columns.issubset(df.columns):
             raise ValueError(f"DHFR data missing required columns. Found: {df.columns}, needed: {required_columns}")
 
-        # Extract sequences and scores
         sequences = df["SV"].tolist()
-        scores = df["m"].values  # 'm' is the target column for DHFR
-
-        # Update wildtype sequence based on actual data
-        self.wildtype_sequence = sequences[0]  # First sequence is the wildtype in this dataset
-
-        # Create lookup dictionary
-        lookup_dict = {seq: score for seq, score in zip(sequences, scores)}
-
-        # Sort sequences by score
-        seqs = list(lookup_dict.keys())
-        scores = np.array([lookup_dict[seq] for seq in seqs])
-        sorted_indices = np.argsort(scores)[::-1]  # Descending order
-        sorted_scores = scores[sorted_indices]
-        sorted_seqs = [seqs[i] for i in sorted_indices]
-
-        return lookup_dict, sorted_scores, sorted_seqs
+        scores = df["m"].values
+        # First sequence in this dataset is the wildtype.
+        self.wildtype_sequence = sequences[0]
+        return self._build_lookup(sequences, scores)
